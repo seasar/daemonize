@@ -69,7 +69,6 @@ class Daemonize(object):
         """
         self.logger.warn("Stopping daemon.")
         os.remove(self.pid)
-        sys.exit(0)
 
     def start(self):
         """
@@ -240,9 +239,14 @@ class Daemonize(object):
         atexit.register(self.exit)
 
         self.logger.warn("Starting daemon.")
-
+        
+        exit_code = 1
         try:
-            self.action(*privileged_action_result)
+            exit_code = self.action(*privileged_action_result)
         except Exception as e:
             for line in traceback.format_exc(e).split("\n"):
                 self.logger.error(line)
+        
+        if exit_code is None:
+            exit_code = 0
+        sys.exit(exit_code)
